@@ -30,7 +30,6 @@ import Control.Applicative
 import Control.Monad (when)
 import Control.Monad.State (MonadState, execState, gets, modify)
 import Data.Data (Data)
-import Data.Foldable (traverse_)
 import Data.Monoid ((<>))
 import Data.Sequence (Seq, fromList, singleton)
 import Data.List (intersperse)
@@ -96,6 +95,16 @@ addOutputs outputTypes = do
   -- modify (over outputList (`mappend` outputs))
   addToOutputList outputs
 
+putExprs :: MonadState PrinterState m => [Expr] -> m ()
+putExprs [] =
+  return ()
+putExprs [expr] =
+  putExpression expr
+putExprs (expr:xs) = do
+  putExpression expr
+  addOutputs [OutputOther " "]
+  putExprs xs
+
 initPrinterState :: PrinterState
 initPrinterState = printerState 0 (-1) []
 
@@ -140,7 +149,7 @@ putSurroundExpr startOutputType endOutputType (CommaSeparated [exprs]) = do
   when isExprsMultiLine $ do
       newLineAndDoIndent
   addOutputs [startOutputType, OutputOther " "]
-  traverse_ putExpression exprs
+  putExprs exprs
   if isExprsMultiLine
     then do
       newLineAndDoIndent
@@ -166,7 +175,7 @@ putCommaSep (CommaSeparated expressionsList) =
   where
     evaledExpressionList :: [m ()]
     evaledExpressionList =
-      traverse_ putExpression <$> expressionsList
+      putExprs <$> expressionsList
 
 putComma
   :: MonadState PrinterState m
@@ -225,7 +234,7 @@ putExpression (Other string) = do
 
 runPrinterState :: PrinterState -> [Expr] -> PrinterState
 runPrinterState initState expressions =
-  execState (traverse_ putExpression expressions) initState
+  execState (putExprs expressions) initState
 
 runInitPrinterState :: [Expr] -> PrinterState
 runInitPrinterState = runPrinterState initPrinterState
