@@ -143,7 +143,7 @@ nonRecursiveExpr = do
 -- True
 anyOtherText :: Parser Expr
 anyOtherText = do
-  res <- many (Text.Parsec.noneOf "[](){},\"")
+  res <- many (Text.Parsec.noneOf "[](){},\" ")
   case res of
     "" ->
       parserFail

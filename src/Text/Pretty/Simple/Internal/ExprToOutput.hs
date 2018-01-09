@@ -95,15 +95,19 @@ addOutputs outputTypes = do
   -- modify (over outputList (`mappend` outputs))
   addToOutputList outputs
 
+-- putExprs :: MonadState PrinterState m => [Expr] -> m ()
+-- putExprs [] =
+--   return ()
+-- putExprs [expr] =
+--   putExpression expr
+-- putExprs (expr:xs) = do
+--   putExpression expr
+--   addOutputs [OutputOther " "]
+--   putExprs xs
+
 putExprs :: MonadState PrinterState m => [Expr] -> m ()
-putExprs [] =
-  return ()
-putExprs [expr] =
-  putExpression expr
-putExprs (expr:xs) = do
-  putExpression expr
-  addOutputs [OutputOther " "]
-  putExprs xs
+putExprs exprs =
+  sequence_ $ intersperse (addOutput OutputSpace) (putExpression <$> exprs)
 
 initPrinterState :: PrinterState
 initPrinterState = printerState 0 (-1) []
@@ -148,23 +152,22 @@ putSurroundExpr startOutputType endOutputType (CommaSeparated [exprs]) = do
   let isExprsMultiLine = howManyLines exprs > 1
   when isExprsMultiLine $ do
       newLineAndDoIndent
-  addOutputs [startOutputType, OutputOther " "]
+  addOutputs [startOutputType, OutputSpace]
   putExprs exprs
   if isExprsMultiLine
     then do
       newLineAndDoIndent
-    else addOutput $ OutputOther " "
+    else addOutput $ OutputSpace
   addOutput endOutputType
   addToNestLevel (-1)
 putSurroundExpr startOutputType endOutputType commaSeparated = do
   addToNestLevel 1
   newLineAndDoIndent
-  addOutputs [startOutputType, OutputOther " "]
+  addOutputs [startOutputType, OutputSpace]
   putCommaSep commaSeparated
   newLineAndDoIndent
   addOutput endOutputType
   addToNestLevel (-1)
-  addOutput $ OutputOther " "
 
 putCommaSep
   :: forall m.
@@ -182,7 +185,7 @@ putComma
   => m ()
 putComma = do
   newLineAndDoIndent
-  addOutputs [OutputComma, OutputOther " "]
+  addOutputs [OutputComma, OutputSpace]
 
 howManyLines :: [Expr] -> LineNum
 howManyLines = currLine . runInitPrinterState

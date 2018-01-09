@@ -108,6 +108,7 @@ renderOutput (Output _ OutputNewLine) = pure "\n"
 renderOutput (Output nest OutputOpenBrace) = renderRaibowParenFor nest "{"
 renderOutput (Output nest OutputOpenBracket) = renderRaibowParenFor nest "["
 renderOutput (Output nest OutputOpenParen) = renderRaibowParenFor nest "("
+renderOutput (Output _ OutputSpace) = pure " "
 renderOutput (Output _ (OutputOther string)) =
   -- TODO: This probably shouldn't be a string to begin with.
   pure $ fromString string

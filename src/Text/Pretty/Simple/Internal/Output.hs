@@ -70,6 +70,8 @@ data OutputType
   -- of the other tokens.
   | OutputStringLit !String
   -- ^ This represents a string literal.  For instance, @\"foobar\"@.
+  | OutputSpace
+  -- ^ This represents the @\ @ character.
   deriving (Data, Eq, Generic, Read, Show, Typeable)
 
 -- | 'IsString' (and 'fromString') should generally only be used in tests and
@@ -85,6 +87,7 @@ instance IsString OutputType where
     fromString "{" = OutputOpenBrace
     fromString "[" = OutputOpenBracket
     fromString "(" = OutputOpenParen
+    fromString " " = OutputSpace
     fromString string = OutputOther string
 
 -- | An 'OutputType' token together with a 'NestLevel'.  Basically, each
